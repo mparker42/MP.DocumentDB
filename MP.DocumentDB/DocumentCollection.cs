@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using MP.DocumentDB.Interfaces;
 using MP.DocumentDB.Models;
+using System.Linq.Expressions;
 
 namespace MP.DocumentDB
 {
@@ -20,18 +22,14 @@ namespace MP.DocumentDB
             _collection = database.GetCollection<T>(_configuration.CollectionName);
         }
 
-        public async Task<T> GetFirstOrDefault(Func<T, bool> query)
+        public async Task<T> GetFirstOrDefault(Expression<Func<T, bool>> query)
         {
-            var result = await _collection.FindAsync(f => query(f));
-
-            return await result.FirstOrDefaultAsync();
+            return await _collection.AsQueryable().FirstOrDefaultAsync(query);
         }
 
-        public async Task<T> GetSingle(Func<T, bool> query)
+        public async Task<T> GetSingle(Expression<Func<T, bool>> query)
         {
-            var result = await _collection.FindAsync(f => query(f));
-
-            return await result.SingleAsync();
+            return await _collection.AsQueryable().SingleAsync(query);
         }
 
         public async Task Insert(T item)
